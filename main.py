@@ -20,14 +20,14 @@ def get_year():
     return current_year
 
 def get_correct_word(current_year):
-    if current_year == 100:
+    if 2 <= current_year %10 <= 4:
+        if current_year//10 %10 == 1:
+            return "лет"
+        else:
+            return "года"
+    elif 5 <= current_year %10 <= 10:
         return "лет"
-    elif current_year == 101:
-        return "год"
-    elif current_year == 102:
-        return "года"
-    elif current_year == 11:
-        return "лет"
+
 
 env = Environment(
     loader=FileSystemLoader('.'),

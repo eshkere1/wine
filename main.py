@@ -3,18 +3,33 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import datetime
 import pandas
 import collections
-from pprint import pprint
+import os
+from dotenv import load_dotenv
 
 
-wines = pandas.read_excel('wine3.xlsx', na_values=['N/A', 'NA'], keep_default_na=False).to_dict('records')
+def main():
+    load_dotenv()
+    wines = pandas.read_excel(os.environ["XLSX_FILE"], na_values=['N/A', 'NA'], keep_default_na=False).to_dict('records')
+    grouped_wines = collections.defaultdict(list)
+    for wine in wines:
+        grouped_wines[wine["Категория"]].append(wine)
+    env = Environment(
+    loader=FileSystemLoader('.'),
+    autoescape=select_autoescape(['html', 'xml'])
+    )
+    template = env.get_template('template.html')
+    rendered_page = template.render(
+        year=get_existence_year(),
+        correct_word=get_correct_word(get_existence_year()),
+        all_drinks=grouped_wines
+    )
+    with open('index.html', 'w', encoding="utf8") as file:
+        file.write(rendered_page)
+    server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
+    server.serve_forever()
 
-dict_of_lists = collections.defaultdict(list)
-for wine in wines:
-    dict_of_lists[wine["Категория"]].append(wine)
-pprint(dict_of_lists)
 
-
-def get_year():
+def get_existence_year():
     now = datetime.datetime.now()
     current_year = now.year - 1920
     return current_year
@@ -29,25 +44,5 @@ def get_correct_word(current_year):
         return "лет"
 
 
-env = Environment(
-    loader=FileSystemLoader('.'),
-    autoescape=select_autoescape(['html', 'xml'])
-)
-
-template = env.get_template('template.html')
-
-
-rendered_page = template.render(
-    year=get_year(),
-    correct_word=get_correct_word(get_year()),
-    all_drinks=dict_of_lists
-)
-with open('index.html', 'w', encoding="utf8") as file:
-    file.write(rendered_page)
-
-server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
-server.serve_forever()
-
-
-
-
+if __name__ == '__main__':
+    main()

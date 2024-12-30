@@ -40,7 +40,12 @@ def get_correct_word(current_year):
             return "лет"
         else:
             return "года"
-    elif 5 <= current_year %10 <= 10:
+    elif current_year %10 == 1:
+        if current_year//10 %10 == 1:
+            return "лет"
+        else:
+            return "год"
+    else:
         return "лет"
 
 
